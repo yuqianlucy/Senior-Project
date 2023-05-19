@@ -38,6 +38,30 @@ def clean_dataset(dataset):
     print(dataset)
     return dataset
 
+# we wish to fix the multicollinearity issue in your code without using sklearn.linear_model, you can calculate the variance inflation factor (VIF) for each feature and remove features with high VIF values. 
+# Calculate the variance inflation factor (VIF) for a feature
+def calculate_vif(X,feature_idx):
+    mask=np.arange(X.shape[1]!=feature_idx)
+    X_partial=X[:,mask]
+    # calcuating the r_squared
+    r_squared=linear_regression().fit(X_partial,X[:,feature_idx].score(X_partial,X[:,feature_idx]))
+    #caculating the vif
+    vif=1/(1-r_squared)
+    # we are returning vif
+    return vif
+
+# next, we are definting a function to Calcualte the VIF for all features
+def calculate_all_vif(X):
+    # defining the number of feature
+    num_features=X.shape[1]
+    # creating a list to store all vifs for different variables
+    vifs=[]
+    # looping over each feature
+    for i in range(num_features):
+        vif=calculate_vif(X,i)
+        # we wish to append vif back to the list
+        vifs.append(vif)
+    return vifs
 # need to create a feature selection function after data cleaning to extract the important feature
 def feature_selection(dataset,target_column,method='forward'):
     # Step 1: Remove duplicate records
