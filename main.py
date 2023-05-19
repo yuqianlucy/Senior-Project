@@ -43,8 +43,18 @@ def clean_dataset(dataset):
 def calculate_vif(X,feature_idx):
     mask=np.arange(X.shape[1]!=feature_idx)
     X_partial=X[:,mask]
+    # we wish to Add a column of ones to X_partial for the intercept term
+    X_partial=np.concatenate((np.ones((X_partial.shape[0],1)),X_partial),axis=1)
+    # caculating the OLS coefficients
+    coef=np.linalg.lstsq(X_partial,X[:,feature_idx],rcond=None)[0]
+    # we are Calculate the predicted values
+    y_hat=np.dot(X_partial,coef)
+    # Calculated the residual sum of square (RSS)
+    rss=np.sum((X[:,feature_idx]-y_hat)**2)
+    # Calculated the total sum of squares (TSS)
+    tss=np.sum((X[:,feature_idx]-np.mean(X[:,feature_idx]))**2)
     # calcuating the r_squared
-    r_squared=linear_regression().fit(X_partial,X[:,feature_idx].score(X_partial,X[:,feature_idx]))
+    r_squared=1-(rss/tss)
     #caculating the vif
     vif=1/(1-r_squared)
     # we are returning vif
@@ -224,12 +234,12 @@ if __name__=="__main__":
 
     #get_dataset()
     df=get_dataset()
-    df=clean_dataset(df)
+    clean_df=clean_dataset(df)
     # we wish to only check the numeric columns correlation, we wish to drop the catgorical columns
-    df_numeric=df.select_dtypes(include=np.number)
+    clean_df_numeric=clean_df.select_dtypes(include=np.number)
     #before we do the feature seection, we need to chck for mutlicolinearlity
     # first we need to get the correlation matrix
-    corr_matrix=df_numeric.corr()
+    corr_matrix=clean_df_numeric.corr()
     # next, we wish to vosualized the correlation matrix
     plt.figure(figsize=(10,8))
     cmap=cm.get_cmap('RdBu',30)
@@ -244,9 +254,10 @@ if __name__=="__main__":
     # setting up the yticks
     plt.yticks(tick_marks,corr_matrix.columns)
     # we wish to show the graph
-    plt.show()
+    #plt.show()
     # getting the selected features
-    selected_features=feature_selection(df,'price',method='forward')
+    #selected_features=feature_selection(df,'price',method='forward')
+    selected_features=feature_selection(clean_df,target_column='price')
     # print out the selected features
     print(selected_features)
     # intialized the X variable(predictor variable)
