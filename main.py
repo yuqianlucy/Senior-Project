@@ -195,9 +195,11 @@ if __name__=="__main__":
     #get_dataset()
     df=get_dataset()
     df=clean_dataset(df)
+    # we wish to only check the numeric columns correlation, we wish to drop the catgorical columns
+    df_numeric=df.select_dtypes(include=np.number)
     #before we do the feature seection, we need to chck for mutlicolinearlity
     # first we need to get the correlation matrix
-    corr_matrix=df.corr()
+    corr_matrix=df_numeric.corr()
     # next, we wish to vosualized the correlation matrix
     plt.figure(figsize=(10,8))
     cmap=cm.get_cmap('RdBu',30)
