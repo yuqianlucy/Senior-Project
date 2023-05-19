@@ -189,14 +189,22 @@ def multiple_linear_regression(X,y,alpha=1e-6):
     X_scaled=(X-np.mean(X,axis=0))/np.std(X,axis=0)
     # Add a column of ones to X for the intercept term
     X_scaled=np.concatenate(((np.ones((X_scaled.shape[0],1))),X_scaled),axis=1)
+    # Calcuate the covariance matrix of X
+    covariance_matrix=np.cov(X_scaled.T)
     # we need to take care of the regularization to the diagonal elements
     # need to adjust dimensions
-    regularization=alpha*np.eye(X_scaled.shape[1])
+    #regularization=alpha*np.eye(X_scaled.shape[1])[np.newaxis, :, :]
+    # add regularization using covarianc matrix
+    covariance_matrix+=alpha*np.eye(covariance_matrix.shape[0])
+    
     # we need to address SVD convergence issues
     #use np.tile to repeat the regularization term along the first axis to match the shape of X_scaled
-    X_scaled +=np.tile(regularization,(X_scaled.shape[0],1,1))
+    #need to repeat the regularization term along the second axis to match the shape of X_scaled.
+    #X_scaled +=np.tile(covariance_matrix,(X_scaled.shape[0],1,1))
     # next, we are calculating the ordinarity least square coefficeitns
-    coef=np.linalg.lstsq(X_scaled,y,rcond=None)[0]
+    #Calculating the OLS coefficients using ridge regression
+    #coef=np.linalg.lstsq(X_scaled,y,rcond=None)[0]
+    coef=np.linalg.lstsq(covariance_matrix,X_scaled.T@y,rcond=None)[0]
     # We are returning the coefficients
     return coef
 
