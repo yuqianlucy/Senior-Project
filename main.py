@@ -38,6 +38,63 @@ def clean_dataset(dataset):
     print(dataset)
     return dataset
 
+# need to create a feature selection function after data cleaning to extract the important feature
+def feature_selection(dataset,target_column,method='forward'):
+    # Step 1: Remove duplicate records
+    dataset=dataset.drop_duplicates()
+    #Step 2: Remove the constant columns
+    dataset=dataset.dropna(axis=1,how='all')
+    # Step 3: Perform data transformation,if needed
+    
+    # Step 4: Select numeric variables
+    numeric_cols=dataset.select_dtypes(include=np.number).columns.tolist()
+    # Step 5: Perform feature selection
+    selected_features=[]
+    remaining_features=numeric_cols.copy()
+    current_score=0
+    best_new_score=0
+
+    # taking care of the remaining feature, use them for model prediction
+    while remaining_features:
+        scores=[]
+        #creating for loop to loop over the feature
+        for feature in remaining_features:
+            selected_features.append(feature)
+            # setting up the predictor(independent variable)
+            X=dataset[selected_features]
+            # setting up the response(dependent varibale)
+            y=dataset[target_column]
+
+            # We need to fit the machine learning model and calculated the score (R-squared,accuracy)
+            # using linear regression
+            score=linear_regression(X,y)
+            scores.append(score)
+            # we need to remove the not use feature
+            selected_features.remove(feature)
+            # we are finding what are our best new feature
+        best_new_feature=remaining_features[np.argmax(scores)]
+            # getting the best new score
+        best_new_score=np.max(scores)
+
+    # we are trying to use either forward or backward selection
+        if method=='forward':
+            if best_new_score>current_score:
+                selected_features.append(best_new_feature)
+                remaining_features.remove(best_new_feature)
+                # assighing the best new score to be the current score
+                current_score=best_new_score
+            else:
+                break
+    # then we try the backward methods
+        elif method=='backward':
+            if best_new_score>=current_score:
+                selected_features.append(best_new_feature)
+                remaining_features.remove(best_new_feature)
+                current_score=best_new_score
+            else:
+                break
+    return selected_features
+
 
 
 # creating a function to ask input from the user
@@ -69,20 +126,34 @@ def linear_regression(X,y):
     y_pred=X.dot(theta)
     # we are returning the result
     return y_pred
-
+# define another function to do ridge regression fitting
+def ridge_regression(X,y,alpha):
+    # Add a column of ones to the feature matrix X using np.column_stack to account for the intercept term in the linear regression equation.
+    X=np.column_stack((np.ones_like(y),X))
+    #Calcuated the coefficients using the ridge regression equation
+    XTX=X.T.dot(X)
+    #taking care of the identity matrix
+    I=np.eye(XTX.shape[0])
+    # getting the parameter theta
+    theta=np.linalg.inv(XTX+alpha*I).dot(X.T).dot(y)
+    # next, we are predicting the values by multiplying the feature matrix
+    y_pred=X.dot(theta)
+    #Return the predicted values
+    return y_pred
     
-def polyfit2d(x,y,m):
-    order=int(np.sqrt(len(m)))-1
+# def polyfit2d(x,y,m):
+#     order=int(np.sqrt(len(m)))-1
     
-    #using itertools
-    ij=itertools.product(range(order+1),range(order+1))
+#     #using itertools
 
-    z=np.zeros_like(x)
+#     ij=itertools.product(range(order+1),range(order+1))
 
-    for a,(i,j) in zip(m,ij):
-        z+=a*x**i*y**j
+#     z=np.zeros_like(x)
 
-    return z
+#     for a,(i,j) in zip(m,ij):
+#         z+=a*x**i*y**j
+
+#     return z
 
 
 
@@ -122,29 +193,78 @@ if __name__=="__main__":
     #get_dataset()
     df=get_dataset()
     df=clean_dataset(df)
+    # getting the selected features
+    selected_features=feature_selection(df,'price',method='forward')
+    # print out the selected features
+    print(selected_features)
     # intialized the X variable(predictor variable)
     #X=df[['mileage']].fillna(0)
     # adding another independent varibale Sold_Year
     # decalre the target variable
-    X=df[['mileage','Sold_Year']].fillna(0)
-    y=df['price'].fillna(0)
-    linear_regression_coefficients=linear_regression(X,y)
+    #X=df[['mileage','Sold_Year']].fillna(0)
+    #y=df['price'].fillna(0)
+    #linear_regression_coefficients=linear_regression(X,y)
     # we are checking the regression coefficients
-    print(linear_regression_coefficients)
+    #print(linear_regression_coefficients)
     # then, we wish to Calculate predictions
-    y_pred=linear_regression(X,y)
-    # we need to Calculated R-squared
+    #y_pred=linear_regression(X,y)
+    # next, we wish to Calculated prediction using polynominal fit
+    
+    # next, we wish to do a polynominal fit
+    #x=df['mileage'].fillna(0)
+    #y=df['price'].fillna(0)
+    # decalre the order variable
+    #Specify the desired order of the polynomial
+    #order=2
+    # getting a try block
+    # try:
+    #     # Perform polynominal fitting
+    #     polyfit_coefficients=np.polyfit(x,y,order)
+        #m=polyfit2d_coefficients
+
+    #     # Calling the polyfit2d function
+    #     polyfit_result=polyfit2d(x,y,polyfit_coefficients)
+    #     # lastl, we want to print out the result
+    #     print(polyfit_result)
+    #     y_pred1=polyfit2d(x,y,order)
+    #     # we need to Calculated R-squared
+        ## Sum of squared residuals
+    # ssr=np.sum((y-y_pred)**2)
+    #     # Total sum of squares
+    # sst=np.sum((y-np.mean(y))**2)
+    #     # Calcualating the R square
+    # r2=1-(ssr/sst)
+    #     # we wish to prit out r2
+    # print("R-squared",r2)
+    #     # next, we wish to Calculated Mean Squared Error(MSE)
+    # mse=np.mean((y-y_pred)**2)
+    # print("Mean Squared Error(MSE):",mse)
+
+    #In this modified function, an additional parameter alpha is introduced, which controls the regularization strength. Higher values of alpha result in stronger regularization. Ridge regression adds the L2 regularization term (alpha * I) to the normal equation, where I is the identity matrix.To use the ridge_regression function, you need to provide the feature matrix X, the target variable y, and the value of alpha. Here's an example:
+    # checking the result of ridge regression
+    #X=df[['mileage']].fillna(0)
+    #y=df['price'].fillna(0)
+    #alpha=0.1
+    # getting the ridge_regression_coefficients
+    #ridge_regression_coefficients=ridge_regression(X,y,alpha)
+    # we wish to print out the coefficients
+    #print(ridge_regression_coefficients)
+    # then, we wish to Calculate predictions
+    #y_pred2=linear_regression(X,y)
     ## Sum of squared residuals
-    ssr=np.sum((y-y_pred)**2)
-    # Total sum of squares
-    sst=np.sum((y-np.mean(y))**2)
-    # Calcualating the R square
-    r2=1-(ssr/sst)
-    # we wish to prit out r2
-    print("R-squared",r2)
-    # next, we wish to Calculated Mean Squared Error(MSE)
-    mse=np.mean((y-y_pred)**2)
-    print("Mean Squared Error(MSE):",mse)
+    #ssr=np.sum((y-y_pred2)**2)
+        # Total sum of squares
+    #sst=np.sum((y-np.mean(y))**2)
+        # Calcualating the R square
+    #r2=1-(ssr/sst)
+        # we wish to prit out r2
+    #print("R-squared",r2)
+        # next, we wish to Calculated Mean Squared Error(MSE)
+    #mse=np.mean((y-y_pred2)**2)
+    #print("Mean Squared Error(MSE):",mse)
+
+    # except np.linalg.LinAlgError as e:
+    #     print("Error in linear least squares computation",e)
     #polyfit2d_coefficients=polyfit2d(df['mileage'],df['Sold_Year'],df['price'])
     #print(polyfit2d_coefficients)
     print(df.dtypes)
