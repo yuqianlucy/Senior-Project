@@ -193,7 +193,8 @@ def multiple_linear_regression(X,y,alpha=1e-6):
     # need to adjust dimensions
     regularization=alpha*np.eye(X_scaled.shape[1])[np.newaxis,:]
     # we need to address SVD convergence issues
-    X_scaled +=regularization
+    #use np.tile to repeat the regularization term along the first axis to match the shape of X_scaled
+    X_scaled +=np.tile(regularization,(X_scaled.shape[0],1))
     # next, we are calculating the ordinarity least square coefficeitns
     coef=np.linalg.lstsq(X_scaled,y,rcond=None)[0]
     # We are returning the coefficients
