@@ -181,7 +181,17 @@ def ridge_regression(X,y,alpha):
     y_pred=X.dot(theta)
     #Return the predicted values
     return y_pred
-    
+
+# after the feature selection, we are ready to fit some model, first one going to try is mutltiple_linear_regression
+def multiple_linear_regression(X,y):
+    # Add a column of ones to X for the intercept term
+    X=np.concatenate(((np.ones((X.sjape[0],1))),X),axis=1)
+    # next, we are calculating the ordinarity least square coefficeitns
+    coef=np.linalg.lstsq(X,y,rcond=None)[0]
+    # We are returning the coefficients
+    return coef
+
+
 # def polyfit2d(x,y,m):
 #     order=int(np.sqrt(len(m)))-1
     
@@ -260,6 +270,13 @@ if __name__=="__main__":
     selected_features=feature_selection(clean_df,target_column='price')
     # print out the selected features
     print(selected_features)
+    # after selecting the feature,we are ready to fit using newly created functions
+    X=clean_df[['Sold_Year','Sold_month','car_year','mileage', 'cost','categoryColor', 'retailWholesaleJunk', 'dmvMarkerice', 'categoryColor', 'retailWholesaleJunk', 'dmvMarketValue']].values
+    y=clean_df['price'].values
+    # We are Fitting the multiple linear regression model
+    coefficients=multiple_linear_regression(X,y)
+    # we are priting out the coefficients
+    print(coefficients)
     # intialized the X variable(predictor variable)
     #X=df[['mileage']].fillna(0)
     # adding another independent varibale Sold_Year
