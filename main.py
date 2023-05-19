@@ -123,8 +123,10 @@ if __name__=="__main__":
     df=get_dataset()
     df=clean_dataset(df)
     # intialized the X variable(predictor variable)
-    X=df[['mileage']].fillna(0)
+    #X=df[['mileage']].fillna(0)
+    # adding another independent varibale Sold_Year
     # decalre the target variable
+    X=df[['mileage','Sold_Year']].fillna(0)
     y=df['price'].fillna(0)
     linear_regression_coefficients=linear_regression(X,y)
     # we are checking the regression coefficients
