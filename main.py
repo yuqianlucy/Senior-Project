@@ -190,7 +190,8 @@ def multiple_linear_regression(X,y,alpha=1e-6):
     # Add a column of ones to X for the intercept term
     X_scaled=np.concatenate(((np.ones((X_scaled.shape[0],1))),X_scaled),axis=1)
     # we need to take care of the regularization to the diagonal elements
-    regularization=alpha*np.eye(X_scaled.shape[1])
+    # need to adjust dimensions
+    regularization=alpha*np.eye(X_scaled.shape[1])[np.newaxis,:]
     # we need to address SVD convergence issues
     X_scaled +=regularization
     # next, we are calculating the ordinarity least square coefficeitns
