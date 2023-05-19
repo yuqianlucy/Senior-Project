@@ -43,7 +43,8 @@ def feature_selection(dataset,target_column,method='forward'):
     # Step 1: Remove duplicate records
     dataset=dataset.drop_duplicates()
     #Step 2: Remove the constant columns
-    dataset=dataset.dropna(axis=1,how='all')
+    #dataset=dataset.dropna(axis=1,how='all')
+    dataset=dataset.fillna(0)
     # Step 3: Perform data transformation,if needed
     
     # Step 4: Select numeric variables
@@ -190,9 +191,28 @@ def ridge_regression(X,y,alpha):
 
 # entry point of the function
 if __name__=="__main__":
+
     #get_dataset()
     df=get_dataset()
     df=clean_dataset(df)
+    #before we do the feature seection, we need to chck for mutlicolinearlity
+    # first we need to get the correlation matrix
+    corr_matrix=df.corr()
+    # next, we wish to vosualized the correlation matrix
+    plt.figure(figsize=(10,8))
+    cmap=cm.get_cmap('RdBu',30)
+    # then we wish to use imshow
+    plt.imshow(corr_matrix,interpolation='nearest',cmap=cmap)
+    # take care of the colorbar
+    plt.colorbar()
+    #setting up the tickmark
+    tick_marks=np.arange(len(corr_matrix.columns))
+    #setting up the xticks
+    plt.xticks(tick_marks,corr_matrix.columns,rotation=90)
+    # setting up the yticks
+    plt.yticks(tick_marks,corr_matrix.columns)
+    # we wish to show the graph
+    plt.show()
     # getting the selected features
     selected_features=feature_selection(df,'price',method='forward')
     # print out the selected features
@@ -270,3 +290,30 @@ if __name__=="__main__":
     print(df.dtypes)
     #car_information_entering()
     #print(mileage,Car_Model,zipcode,operation,Sold_Year)
+
+
+
+
+
+
+
+
+
+
+#     In addition to forward and backward feature selection, there are other methods for choosing features in machine learning. Some commonly used methods include:
+
+# Recursive Feature Elimination (RFE): RFE is an iterative method that starts with all features and gradually eliminates the least important features based on a specified model's performance. It recursively fits the model and removes the least important features until a desired number of features remains.
+
+# L1 Regularization (Lasso): L1 regularization adds a penalty term to the model's cost function, which encourages sparsity by shrinking the coefficients of less important features to zero. This allows for feature selection as features with zero coefficients are excluded from the model.
+
+# Tree-based Methods: Decision trees and tree-based ensemble models such as Random Forest and Gradient Boosting can provide insights into feature importance. By analyzing the importance scores assigned to each feature, you can select the most relevant ones.
+
+# Univariate Selection: Univariate feature selection methods evaluate each feature independently based on statistical tests or scoring functions. Features with the highest scores or p-values below a specified threshold are selected.
+
+# Principal Component Analysis (PCA): PCA is a dimensionality reduction technique that transforms the original features into a new set of uncorrelated variables called principal components. The principal components with the highest variance can be selected as the most informative features.
+
+# Correlation Matrix: You can compute the correlation matrix between features and the target variable. Features with high correlation (either positive or negative) with the target can be selected as relevant features.
+
+# Mutual Information: Mutual information measures the dependence between two variables, taking into account both linear and non-linear relationships. Features with high mutual information with the target variable can be considered relevant.
+
+# These are just a few examples of feature selection methods. The choice of method depends on the specific problem, dataset characteristics, and the model you are using. It's often beneficial to try different methods and compare their performance to choose the most appropriate features for your machine learning task.
