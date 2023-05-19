@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from sklearn.preprocessing import StandardScaler
+#from sklearn.preprocessing import StandardScaler
 #from sklearn.metrics import r2_score,mean_absolute_error
 #from sklearn.linear_model import LinearRegression
 
@@ -184,12 +184,13 @@ def ridge_regression(X,y,alpha):
     return y_pred
 
 # after the feature selection, we are ready to fit some model, first one going to try is mutltiple_linear_regression
-def multiple_linear_regression(X,y):
+def multiple_linear_regression(X,y,alpha=1e-6):
     # need to add step for scaling and standardization
-    scaler=StandardScaler(X)
-    X_scaled=scaler.fit_transform(X)
+    X_scaled=(X-np.mean(X,axis=0))/np.std(X,axis=0)
     # Add a column of ones to X for the intercept term
-    X=np.concatenate(((np.ones((X_scaled.shape[0],1))),X_scaled),axis=1)
+    X_scaled=np.concatenate(((np.ones((X_scaled.shape[0],1))),X_scaled),axis=1)
+    # we need to address SVD convergence issues
+    X_scaled +=alpha*np.eye(X_scaled.shape[1])
     # next, we are calculating the ordinarity least square coefficeitns
     coef=np.linalg.lstsq(X_scaled,y,rcond=None)[0]
     # We are returning the coefficients
