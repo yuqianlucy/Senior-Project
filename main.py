@@ -62,6 +62,7 @@ def calculate_all_vif(X):
         # we wish to append vif back to the list
         vifs.append(vif)
     return vifs
+
 # need to create a feature selection function after data cleaning to extract the important feature
 def feature_selection(dataset,target_column,method='forward'):
     # Step 1: Remove duplicate records
@@ -73,51 +74,56 @@ def feature_selection(dataset,target_column,method='forward'):
     
     # Step 4: Select numeric variables
     numeric_cols=dataset.select_dtypes(include=np.number).columns.tolist()
-    # Step 5: Perform feature selection
-    selected_features=[]
-    remaining_features=numeric_cols.copy()
-    current_score=0
-    best_new_score=0
+    X=dataset[numeric_cols].values
+
+    # Step 5: Calculate VIF for each feature
+    vifs=calculate_all_vif(X)
+    # Step 6: Select features with VIF less than a threshold (e.g., 5)
+    selected_features=[numeric_cols[i] for i,vif in enumerate(vifs) if vif<5]
+    # selected_features=[]
+    # remaining_features=numeric_cols.copy()
+    # current_score=0
+    # best_new_score=0
 
     # taking care of the remaining feature, use them for model prediction
-    while remaining_features:
-        scores=[]
-        #creating for loop to loop over the feature
-        for feature in remaining_features:
-            selected_features.append(feature)
-            # setting up the predictor(independent variable)
-            X=dataset[selected_features]
-            # setting up the response(dependent varibale)
-            y=dataset[target_column]
+    # while remaining_features:
+    #     scores=[]
+    #     #creating for loop to loop over the feature
+    #     for feature in remaining_features:
+    #         selected_features.append(feature)
+    #         # setting up the predictor(independent variable)
+    #         X=dataset[selected_features]
+    #         # setting up the response(dependent varibale)
+    #         y=dataset[target_column]
 
-            # We need to fit the machine learning model and calculated the score (R-squared,accuracy)
-            # using linear regression
-            score=linear_regression(X,y)
-            scores.append(score)
-            # we need to remove the not use feature
-            selected_features.remove(feature)
-            # we are finding what are our best new feature
-        best_new_feature=remaining_features[np.argmax(scores)]
-            # getting the best new score
-        best_new_score=np.max(scores)
+    #         # We need to fit the machine learning model and calculated the score (R-squared,accuracy)
+    #         # using linear regression
+    #         score=linear_regression(X,y)
+    #         scores.append(score)
+    #         # we need to remove the not use feature
+    #         selected_features.remove(feature)
+    #         # we are finding what are our best new feature
+    #     best_new_feature=remaining_features[np.argmax(scores)]
+    #         # getting the best new score
+    #     best_new_score=np.max(scores)
 
-    # we are trying to use either forward or backward selection
-        if method=='forward':
-            if best_new_score>current_score:
-                selected_features.append(best_new_feature)
-                remaining_features.remove(best_new_feature)
-                # assighing the best new score to be the current score
-                current_score=best_new_score
-            else:
-                break
-    # then we try the backward methods
-        elif method=='backward':
-            if best_new_score>=current_score:
-                selected_features.append(best_new_feature)
-                remaining_features.remove(best_new_feature)
-                current_score=best_new_score
-            else:
-                break
+    # # we are trying to use either forward or backward selection
+    #     if method=='forward':
+    #         if best_new_score>current_score:
+    #             selected_features.append(best_new_feature)
+    #             remaining_features.remove(best_new_feature)
+    #             # assighing the best new score to be the current score
+    #             current_score=best_new_score
+    #         else:
+    #             break
+    # # then we try the backward methods
+    #     elif method=='backward':
+    #         if best_new_score>=current_score:
+    #             selected_features.append(best_new_feature)
+    #             remaining_features.remove(best_new_feature)
+    #             current_score=best_new_score
+    #         else:
+    #             break
     return selected_features
 
 
