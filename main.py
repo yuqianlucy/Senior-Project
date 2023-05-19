@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from sklearn.preprocessing import StandardScaler
 #from sklearn.metrics import r2_score,mean_absolute_error
 #from sklearn.linear_model import LinearRegression
 
@@ -184,10 +185,13 @@ def ridge_regression(X,y,alpha):
 
 # after the feature selection, we are ready to fit some model, first one going to try is mutltiple_linear_regression
 def multiple_linear_regression(X,y):
+    # need to add step for scaling and standardization
+    scaler=StandardScaler(X)
+    X_scaled=scaler.fit_transform(X)
     # Add a column of ones to X for the intercept term
-    X=np.concatenate(((np.ones((X.sjape[0],1))),X),axis=1)
+    X=np.concatenate(((np.ones((X_scaled.shape[0],1))),X_scaled),axis=1)
     # next, we are calculating the ordinarity least square coefficeitns
-    coef=np.linalg.lstsq(X,y,rcond=None)[0]
+    coef=np.linalg.lstsq(X_scaled,y,rcond=None)[0]
     # We are returning the coefficients
     return coef
 
@@ -271,7 +275,7 @@ if __name__=="__main__":
     # print out the selected features
     print(selected_features)
     # after selecting the feature,we are ready to fit using newly created functions
-    X=clean_df[['Sold_Year','Sold_month','car_year','mileage', 'cost','categoryColor', 'retailWholesaleJunk', 'dmvMarkerice', 'categoryColor', 'retailWholesaleJunk', 'dmvMarketValue']].values
+    X=clean_df[['Sold_Year','Sold_month','car_year','mileage', 'cost','categoryColor', 'retailWholesaleJunk', 'dmvMarketValue', 'categoryColor', 'retailWholesaleJunk', 'dmvMarketValue']].values
     y=clean_df['price'].values
     # We are Fitting the multiple linear regression model
     coefficients=multiple_linear_regression(X,y)
